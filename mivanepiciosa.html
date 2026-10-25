@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Vane Piciosa</title>
+    <style>
+        body {
+            background-color: #ffeef2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Panel de botones superiores */
+        .controls {
+            margin-bottom: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            background-color: #ff6584;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 101, 132, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #f43f63;
+            transform: translateY(-2px);
+        }
+
+        /* Contenedor principal animado */
+        .container {
+            position: relative;
+            width: 500px;
+            height: 450px;
+            transform-origin: bottom center;
+        }
+
+        /* Tallos */
+        .stem {
+            position: absolute;
+            width: 5px;
+            background: linear-gradient(to top, #388e3c, #4caf50);
+            bottom: 60px;
+            left: 50%;
+            transform-origin: bottom center;
+            border-radius: 3px;
+            z-index: 2;
+        }
+        .stem-1 { height: 260px; transform: translateX(-50%) rotate(-24deg); }
+        .stem-2 { height: 290px; transform: translateX(-50%) rotate(-12deg); }
+        .stem-3 { height: 310px; transform: translateX(-50%) rotate(0deg); }
+        .stem-4 { height: 290px; transform: translateX(-50%) rotate(12deg); }
+        .stem-5 { height: 260px; transform: translateX(-50%) rotate(24deg); }
+
+        /* Contenedor de la Flor */
+        .flower {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+        }
+        .fl-1 { top: 70px; left: 85px; }
+        .fl-2 { top: 15px; left: 150px; }
+        .fl-3 { top: -10px; left: 210px; }
+        .fl-4 { top: 15px; left: 270px; }
+        .fl-5 { top: 70px; left: 335px; }
+
+        /* Pétalos */
+        .petal {
+            position: absolute;
+            background: linear-gradient(135deg, #ff8da1, #ff6584);
+            border-radius: 50% 50% 10px 50%;
+            width: 38px; height: 38px;
+            opacity: 0.95;
+            transform-origin: center center;
+            transform: rotate(var(--rot)) translateY(0px) scale(0);
+            transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+        .petal-1 { --rot: 0deg; }
+        .petal-2 { --rot: 72deg; }
+        .petal-3 { --rot: 144deg; }
+        .petal-4 { --rot: 216deg; }
+        .petal-5 { --rot: 288deg; }
+
+        .flower.bloom .petal {
+            transform: rotate(var(--rot)) translateY(-22px) scale(1) rotate(45deg);
+        }
+
+        /* Centro de la flor */
+        .center {
+            position: absolute;
+            background: radial-gradient(circle, #fff9c4, #ffeb3b);
+            border-radius: 50%;
+            width: 24px; height: 24px;
+            z-index: 6;
+            transform: scale(0);
+            transition: transform 0.6s ease-in-out;
+        }
+        .flower.bloom .center { transform: scale(1); }
+
+        /* Jarrón */
+        .wrapper {
+            position: absolute;
+            bottom: 0px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 110px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 20px 20px 100px 100px;
+            backdrop-filter: blur(10px);
+            z-index: 10;
+        }
+
+        .ribbon-bow {
+            position: absolute;
+            bottom: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 35px; height: 16px;
+            background-color: #ff3366;
+            border-radius: 4px;
+            z-index: 15;
+        }
+        .ribbon-bow::before, .ribbon-bow::after {
+            content: ''; position: absolute; width: 22px; height: 22px;
+            background-color: #ff3366; border-radius: 50%; top: -3px;
+        }
+        .ribbon-bow::before { left: -14px; }
+        .ribbon-bow::after { right: -14px; }
+
+        /* --- SECCIÓN DE LA CARTA --- */
+        .envelope-container {
+            margin-top: 30px;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Ventana emergente (Modal) para leer la carta */
+        .letter-modal {
+            display: none; 
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .letter-content {
+            background-color: #fffafb;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 400px;
+            width: 85%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            border: 3px solid #ffccd7;
+            position: relative;
+            transform: scale(0.7);
+            transition: transform 0.3s ease;
+        }
+
+        /* Texto de tu carta */
+        .letter-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #4a4a4a;
+            white-space: pre-line; 
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .close-btn {
+            background-color: #ff6584;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Panel de Control -->
+    <div class="controls">
+        <button id="btnBloom">🌸 Florecer Ramo</button>
+        <button id="btnMusic">🎵 Poner Música</button>
+    </div>
+
+    <!-- Contenedor del Ramo -->
+    <div class="container">
+        <div class="stem stem-1"></div>
+        <div class="stem stem-2"></div>
+        <div class="stem stem-3"></div>
+        <div class="stem stem-4"></div>
+        <div class="stem stem-5"></div>
+
+        <div class="flower fl-1">
+            <div class="petal petal-1"></div><div class="petal petal-2"></div><div class="petal petal-3"></div><div class="petal petal-4"></div><div class="petal petal-5"></div><div class="center"></div>
+        </div>
+        <div class="flower fl-2">
+            <div class="petal petal-1"></div><div class="petal petal-2"></div><div class="petal petal-3"></div><div class="petal petal-4"></div><div class="petal petal-5"></div><div class="center"></div>
+        </div>
+        <div class="flower fl-3">
+            <div class="petal petal-1"></div><div class="petal petal-2"></div><div class="petal petal-3"></div><div class="petal petal-4"></div><div class="petal petal-5"></div><div class="center"></div>
+        </div>
+        <div class="flower fl-4">
+            <div class="petal petal-1"></div><div class="petal petal-2"></div><div class="petal petal-3"></div><div class="petal petal-4"></div><div class="petal petal-5"></div><div class="center"></div>
+        </div>
+        <div class="flower fl-5">
+            <div class="petal petal-1"></div><div class="petal petal-2"></div><div class="petal petal-3"></div><div class="petal petal-4"></div><div class="petal petal-5"></div><div class="center"></div>
+        </div>
+
+        <div class="wrapper"></div>
+        <div class="ribbon-bow"></div>
+    </div>
+
+    <!-- Botón para abrir la carta -->
+    <div class="envelope-container">
+        <button id="btnOpenLetter" style="background-color: #ff3366;">✉️ Abrir Sobre de Amor</button>
+    </div>
+
+    <!-- Pantalla de la carta abierta -->
+    <div class="letter-modal" id="letterModal">
+        <div class="letter-content" id="letterContent">
+            <p class="letter-text">Se que gracias a ti amor eh mejorado en tantos aspectos en mi de verdad que me siento tan afortunado de tenerte en mi vida hoy pues si me senti algo tite pero yo se que con tan solo tus mensajitos escuchar tu vocecita que me da tanta paz y felicidad haces que mis dias mejoren sean bonitos eres lo que todo soñe el viernes que nos vimos pude estar en tus brazos feliz cariñoso sobre todo los besitos que ya tanto extrañaba que perdon por llorar en tus brazos pero el amor que te tengo y cariño es unico siempre quiero sacarte risas mucha felicidad por darte por que lo sabes lo eres todo en mi vida eres lo que tanto anhele y mi amor de mi vida te amoooooooooooo.</p>
+            <button class="close-btn" id="btnCloseLetter">❤️ Cerrar Carta</button>
+        </div>
+    </div>
+
+    <!-- Audio de fondo -->
+    <audio id="bgMusic" loop src="cancion.mp3"></audio>
+    <script>
+        // --- LOGICA DE LAS FLORES ---
+        const btnBloom = document.getElementById('btnBloom');
+        const flowers = document.querySelectorAll('.flower');
+
+        btnBloom.addEventListener('click', () => {
+            flowers.forEach((flower, index) => {
+                setTimeout(() => {
+                    flower.classList.toggle('bloom');
+                }, index * 100);
+            });
+
+            setTimeout(() => {
+                // Validación corregida y compatible para alternar el texto del botón
+                const isBlooming = flowers[0].classList.contains('bloom');
+                btnBloom.innerText = isBlooming ? "✨ Cerrar Ramo" : "🌸 Florecer Ramo";
+            }, 100);
+        });
+
+        // --- LOGICA DE LA MUSICA ---
+        const btnMusic = document.getElementById('btnMusic');
+        const music = document.getElementById('bgMusic');
+
+        btnMusic.addEventListener('click', () => {
+            if (music.paused) {
+                music.play().catch(err => console.log("Audio activo"));
+                btnMusic.innerText = "⏸ Pausar Música";
+                btnMusic.style.backgroundColor = "#4caf50";
+            } else {
+                music.pause();
+                btnMusic.innerText = "🎵 Poner Música";
+                btnMusic.style.backgroundColor = "#ff6584";
+            }
+        });
+
+        // --- LOGICA DE LA CARTA ---
+        const btnOpenLetter = document.getElementById('btnOpenLetter');
+        const btnCloseLetter = document.getElementById('btnCloseLetter');
+        const letterModal = document.getElementById('letterModal');
+        const letterContent = document.getElementById('letterContent');
+
+        btnOpenLetter.addEventListener('click', () => {
+            letterModal.style.display = 'flex';
+            setTimeout(() => {
+                letterContent.style.transform = 'scale(1)';
+            }, 10);
+        });
+
+        btnCloseLetter.addEventListener('click', () => {
+            letterContent.style.transform = 'scale(0.7)';
+            setTimeout(() => {
+                letterModal.style.display = 'none';
+            }, 200);
+        });
+    </script>
+</body>
+</html>
